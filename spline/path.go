@@ -6,19 +6,23 @@ import (
 
 type Path struct {
 	splines []Spline
+	points  []Point
 }
 
 func NewPath(splines []Spline) *Path {
-	return &Path{splines}
+	points := []Point{}
+	for index, spline := range splines {
+		if index == 0 {
+			points = append(points, spline.GetPoints()[0])
+		}
+		// TODO: make this handle more than two points
+		points = append(points, spline.GetPoints()[1])
+	}
+	return &Path{splines, points}
 }
 
-func (path *Path) sForSpline(s float64) (splineIndex uint, sSpline float64) {
-	amountOfSplines := float64(len(path.splines))
-	splineSize := SRange / amountOfSplines
-	index := uint(s / splineSize)
-	sSpline = (math.Mod(s, splineSize) * amountOfSplines)
-
-	return index, sSpline
+func (path *Path) GetPoints() []Point {
+	return path.points
 }
 
 func (path *Path) X(s float64) float64 {
@@ -65,4 +69,21 @@ func (path *Path) GetOptimizationParams() []float64 {
 		optimizationParams = append(optimizationParams, currentSpline.GetOptimizationParams()...)
 	}
 	return optimizationParams
+}
+
+func (path *Path) GetOptimizationParamsLength() uint {
+	totalLength := uint(0)
+	for _, currentSpline := range path.splines {
+		totalLength += currentSpline.GetOptimizationParamsLength()
+	}
+	return totalLength
+}
+
+func (path *Path) sForSpline(s float64) (splineIndex uint, sSpline float64) {
+	amountOfSplines := float64(len(path.splines))
+	splineSize := SRange / amountOfSplines
+	index := uint(s / splineSize)
+	sSpline = (math.Mod(s, splineSize) * amountOfSplines)
+
+	return index, sSpline
 }
