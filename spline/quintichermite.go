@@ -139,7 +139,7 @@ func (quinticHermite *QuinticHermite) GetOptimizationParams() []float64 {
 	return params
 }
 
-func (quinticHermite *QuinticHermite) GetOptimizationLength() uint {
+func (quinticHermite *QuinticHermite) GetOptimizationParamsLength() uint {
 	return quinticHermite.optimizationParamsLength
 }
 
