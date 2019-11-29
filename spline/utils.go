@@ -4,6 +4,10 @@ import (
 	"math"
 )
 
+func PointsDistance(first, second Point) float64 {
+	return math.Sqrt(math.Pow(first.Y-second.Y, 2) + math.Pow(first.X-second.X, 2))
+}
+
 func calcPolynom(factors []float64, s float64) float64 {
 	var result float64 = 0
 	for index, factor := range factors {
@@ -20,8 +24,4 @@ func getDerivativeFactors(factors []float64) []float64 {
 	}
 
 	return newFactors
-}
-
-func PointsDistance(first, second Point) float64 {
-	return math.Sqrt(math.Pow(first.Y-second.Y, 2) + math.Pow(first.X-second.X, 2))
 }
