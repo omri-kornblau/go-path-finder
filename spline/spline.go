@@ -1,5 +1,9 @@
 package spline
 
+import (
+	"math"
+)
+
 type Point struct {
 	X         float64
 	Y         float64
@@ -24,3 +28,7 @@ const (
 	MaxSRange float64 = 1
 	SRange    float64 = MaxSRange - MinSRange
 )
+
+func Angle(spline Spline, s float64) float64 {
+	return math.Atan(spline.DY(s) / spline.DX(s))
+}
