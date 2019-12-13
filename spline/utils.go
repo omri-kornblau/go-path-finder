@@ -18,9 +18,9 @@ func calcPolynom(factors []float64, s float64) float64 {
 }
 
 func getDerivativeFactors(factors []float64) []float64 {
-	var newFactors []float64
+	newFactors := make([]float64, len(factors)-1)
 	for index, factor := range factors[1:] {
-		newFactors[index] = factor * float64(index)
+		newFactors[index] = factor * float64(index+1)
 	}
 
 	return newFactors

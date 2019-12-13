@@ -2,6 +2,8 @@ package spline
 
 import (
 	"math"
+
+	"github.com/omri-kornblau/go-path-finder/utils"
 )
 
 type Point struct {
@@ -26,6 +28,7 @@ type Spline interface {
 const (
 	MinSRange float64 = 0
 	MaxSRange float64 = 1
+	Epsilon   float64 = 1e-5
 	SRange    float64 = MaxSRange - MinSRange
 )
 
@@ -39,5 +42,6 @@ func Radius(spline Spline, s float64) (radius float64) {
 	dy := spline.DY(s)
 	ddy := spline.DDY(s)
 
-	return (ddx*dy - ddy*dx) / math.Pow(math.Pow(dx, 2)+math.Pow(dy, 2), 1.5)
+	radius = math.Pow(math.Pow(dx, 2)+math.Pow(dy, 2), 1.5) / (ddy*dx - ddx*dy)
+	return utils.SetDefault(radius, 0)
 }

@@ -25,6 +25,10 @@ func (path *Path) GetPoints() []Point {
 	return path.points
 }
 
+func (path *Path) GetSplines() []Spline {
+	return path.splines
+}
+
 func (path *Path) X(s float64) float64 {
 	splineIndex, sSpline := path.sForSpline(s)
 	return path.splines[splineIndex].X(sSpline)
@@ -57,24 +61,26 @@ func (path *Path) DDY(s float64) float64 {
 
 func (path *Path) SetOptimzationParams(params []float64) {
 	lastIndex := uint(0)
-	for currentSplineIndex := range path.splines {
-		currentLength := path.splines[currentSplineIndex].GetOptimizationParamsLength()
-		path.splines[currentSplineIndex].SetOptimzationParams(params[lastIndex : lastIndex+currentLength])
+	for _, spline := range path.splines {
+		currentLength := spline.GetOptimizationParamsLength()
+		spline.SetOptimzationParams(params[lastIndex : lastIndex+currentLength])
+		lastIndex += currentLength
 	}
 }
 
 func (path *Path) GetOptimizationParams() []float64 {
 	var optimizationParams []float64
 	for _, currentSpline := range path.splines {
-		optimizationParams = append(optimizationParams, currentSpline.GetOptimizationParams()...)
+		optimizationParams =
+			append(optimizationParams, currentSpline.GetOptimizationParams()...)
 	}
 	return optimizationParams
 }
 
 func (path *Path) GetOptimizationParamsLength() uint {
 	totalLength := uint(0)
-	for _, currentSpline := range path.splines {
-		totalLength += currentSpline.GetOptimizationParamsLength()
+	for _, spline := range path.splines {
+		totalLength += spline.GetOptimizationParamsLength()
 	}
 	return totalLength
 }
@@ -83,6 +89,9 @@ func (path *Path) sForSpline(s float64) (splineIndex uint, sSpline float64) {
 	amountOfSplines := float64(len(path.splines))
 	splineSize := SRange / amountOfSplines
 	index := uint(s / splineSize)
+	if s == 1.0 {
+		return uint(amountOfSplines) - 1, 1.0
+	}
 	sSpline = (math.Mod(s, splineSize) * amountOfSplines)
 
 	return index, sSpline
