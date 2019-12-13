@@ -1,4 +1,4 @@
-package pathfinder
+package utils
 
 import "math"
 
@@ -17,4 +17,11 @@ func AngleDiff(firstAngle, secondAngle float64) float64 {
 		diff += 2*math.Pi - Sign(diff)
 	}
 	return diff
+}
+
+func SetDefault(value, defaultValue float64) float64 {
+	if math.IsInf(value, 0) || math.IsNaN(value) {
+		return defaultValue
+	}
+	return value
 }
