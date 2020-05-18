@@ -16,8 +16,13 @@ func main() {
 		spline.Point{4, 2, math.Pi / 2},
 		spline.Point{6, 3, math.Pi / 2}}
 
-	weights := costcalculator.QuinticHermiteWeights{1}
-	calculatorInit := costcalculator.NewQuinticHermiteCostCalculator(weights)
-	calculator := pathfinder.NewPathCostCalculator(points, calculatorInit)
+	hermiteWeights := costcalculator.QuinticHermiteWeights{1}
+	pathWeights := costcalculator.PathWeights{2}
+	calculatorInit := costcalculator.NewQuinticHermiteCostCalculator(
+		hermiteWeights)
+	calculator := costcalculator.NewPathCostCalculator(points,
+		calculatorInit,
+		pathWeights)
 	pathfinder.OptimizePath(calculator, &optimize.BFGS{})
+	println(calculator.GetCost())
 }

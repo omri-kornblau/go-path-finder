@@ -8,10 +8,11 @@ import (
 )
 
 const (
-	positionCostPower    = 1
-	angleCostPower       = 2
-	radiusCostPower      = 4
-	radiusCostResolution = 0.1
+	positionCostPower     = 1
+	angleCostPower        = 2
+	radiusCostPower       = 4
+	radiusContinuityPower = 2
+	radiusCostResolution  = 0.1
 )
 
 type CostCalculator interface {
