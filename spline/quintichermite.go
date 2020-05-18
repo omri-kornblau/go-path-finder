@@ -4,6 +4,10 @@ import (
 	"math"
 )
 
+const (
+	distanceMagFactor = 1.2
+)
+
 type HermitePoint struct {
 	X         float64
 	Y         float64
@@ -18,7 +22,17 @@ type HermitePoint struct {
 func NewHermitePoint(point Point, magnitude float64) *HermitePoint {
 	dx := math.Cos(point.Direction) * magnitude
 	dy := math.Sin(point.Direction) * magnitude
-	return &HermitePoint{0, 0, dx, dy, 0, 0, magnitude, point.Direction}
+	newHermitePoint := &HermitePoint{
+		X:         point.X,
+		Y:         point.Y,
+		Dx:        dx,
+		Dy:        dy,
+		Ddx:       0,
+		Ddy:       0,
+		magnitude: magnitude,
+		direction: point.Direction}
+
+	return newHermitePoint
 }
 
 func (hermitePoint *HermitePoint) setMagnitude(magnitude float64) {
@@ -31,8 +45,9 @@ func (hermitePoint *HermitePoint) getMagnitude() float64 {
 	return hermitePoint.magnitude
 }
 
-func calcQuinticHermitePolynom(p0A, p0dA, p0ddA, p1A, p1dA, p1ddA float64) []float64 {
-	factors := make([]float64, 5)
+func calcQuinticHermitePolynom(
+	p0A, p0dA, p0ddA, p1A, p1dA, p1ddA float64) []float64 {
+	factors := make([]float64, 6)
 	factors[0] = p0A
 	factors[1] = p0dA
 	factors[2] = 0.5 * p0ddA
@@ -57,11 +72,11 @@ type QuinticHermite struct {
 	optimizationParamsLength uint
 }
 
-func NewQuinticHermite(points []Point) *QuinticHermite {
-	quinticHermite := &QuinticHermite{points: points, optimizationParamsLength: 6}
+func NewQuinticHermite(points []Point) QuinticHermite {
+	quinticHermite := QuinticHermite{points: points, optimizationParamsLength: 6}
 
 	firstPoint, lastPoint := points[0], points[len(points)-1]
-	magnitude := 1.2 * PointsDistance(firstPoint, lastPoint)
+	magnitude := distanceMagFactor * PointsDistance(firstPoint, lastPoint)
 
 	p0 := NewHermitePoint(firstPoint, magnitude)
 	p1 := NewHermitePoint(lastPoint, magnitude)
@@ -73,6 +88,14 @@ func NewQuinticHermite(points []Point) *QuinticHermite {
 	quinticHermite.hermitePoints[0], quinticHermite.hermitePoints[1] = p0, p1
 
 	return quinticHermite
+}
+
+func (quinticHermite *QuinticHermite) GetXFactors() []float64 {
+	return quinticHermite.xFactors
+}
+
+func (quinticHermite *QuinticHermite) GetYFactors() []float64 {
+	return quinticHermite.yFactors
 }
 
 // setXFactors sets xFactors and calculates a derivative factors slice
@@ -120,26 +143,44 @@ func (quinticHermite *QuinticHermite) DDY(s float64) float64 {
 // This is done to change only the params that should be optimized in QuinticHermite and
 // unpack the one dimensional slice from gonum optimizer.
 func (quinticHermite *QuinticHermite) SetOptimzationParams(params []float64) {
-	for index, hermitePoint := range quinticHermite.hermitePoints {
-		hermitePoint.Ddx = params[index]
-		hermitePoint.Ddy = params[index+1]
-		hermitePoint.setMagnitude(params[index+2])
+	points := quinticHermite.hermitePoints
+	singleOptimizeParamsLength :=
+		quinticHermite.optimizationParamsLength / uint(len(points))
+
+	for index, hermitePoint := range points {
+		offset := singleOptimizeParamsLength * uint(index)
+		hermitePoint.Ddx = params[offset]
+		hermitePoint.Ddy = params[offset+1]
+		hermitePoint.setMagnitude(params[offset+2])
 	}
+
+	p0, p1 := points[0], points[len(points)-1]
+	xFactors := calcQuinticHermitePolynom(p0.X, p0.Dx, p0.Ddx, p1.X, p1.Dx, p1.Ddx)
+	yFactors := calcQuinticHermitePolynom(p0.Y, p0.Dy, p0.Ddy, p1.Y, p1.Dy, p1.Ddy)
+
+	quinticHermite.setXFactors(xFactors)
+	quinticHermite.setYFactors(yFactors)
 }
 
 // GetOptimizationParams gets params from QuinticHermite instance that should be
 // optimized and turns them into a single one dimensional slice for gonum optimizer.
 func (quinticHermite *QuinticHermite) GetOptimizationParams() []float64 {
 	params := make([]float64, quinticHermite.optimizationParamsLength)
+	singleOptimizeParamsLength :=
+		quinticHermite.optimizationParamsLength /
+			uint(len(quinticHermite.hermitePoints))
+
 	for index, hermitePoint := range quinticHermite.hermitePoints {
-		params[index] = hermitePoint.Ddx
-		params[index+1] = hermitePoint.Ddy
-		params[index+2] = hermitePoint.getMagnitude()
+		offset := singleOptimizeParamsLength * uint(index)
+		params[offset] = hermitePoint.Ddx
+		params[offset+1] = hermitePoint.Ddy
+		params[offset+2] = hermitePoint.getMagnitude()
 	}
+
 	return params
 }
 
-func (quinticHermite *QuinticHermite) GetOptimizationLength() uint {
+func (quinticHermite *QuinticHermite) GetOptimizationParamsLength() uint {
 	return quinticHermite.optimizationParamsLength
 }
 

@@ -17,16 +17,27 @@ func calcLinearPolynom(start, end float64, polynomDegree uint) []float64 {
 	m := (end - start) / (SRange)
 	b := start
 
-	factors := make([]float64, polynomDegree + 1)
+	factors := make([]float64, polynomDegree+1)
 	factors[0] = b
 	factors[1] = m
 
 	return factors
 }
 
-func NewLinearPolynom(points []Point, polynomDegree uint) *LinearPolynom {
-	linearPolynom := LinearPolynom{points: points, polynomDegree: polynomDegree}
+func NewLinearPolynomFromFactors(xFactors, yFactors []float64,
+	points []Point) LinearPolynom {
 
+	// TODO: verify length of xFactors againsst yFactors
+	linearPolynom := LinearPolynom{points: points,
+		polynomDegree: uint(len(xFactors))}
+	linearPolynom.setXFactors(xFactors)
+	linearPolynom.setYFactors(yFactors)
+
+	return linearPolynom
+}
+
+func NewLinearPolynom(points []Point, polynomDegree uint) LinearPolynom {
+	linearPolynom := LinearPolynom{points: points, polynomDegree: polynomDegree}
 	firstPoint, lastPoint := points[0], points[len(points)-1]
 	xFactors := calcLinearPolynom(firstPoint.X, lastPoint.X, polynomDegree)
 	yFactors := calcLinearPolynom(firstPoint.Y, lastPoint.Y, polynomDegree)
@@ -34,7 +45,7 @@ func NewLinearPolynom(points []Point, polynomDegree uint) *LinearPolynom {
 	linearPolynom.setXFactors(xFactors)
 	linearPolynom.setYFactors(yFactors)
 
-	return &linearPolynom
+	return linearPolynom
 }
 
 // setXFactors sets xFactors and calculates a derivative factors slice
@@ -83,7 +94,7 @@ func (linearPolynom *LinearPolynom) DDY(s float64) float64 {
 // unpack the one dimensional slice from gonum optimizer.
 func (linearPolynom *LinearPolynom) SetOptimzationParams(params []float64) {
 	// TODO: improve factors slice optimzation
-	for i := uint(0); i < linearPolynom.polynomDegree + 1; i++ {
+	for i := uint(0); i < linearPolynom.polynomDegree+1; i++ {
 		linearPolynom.xFactors[i] = params[i]
 		linearPolynom.yFactors[i] = params[i+linearPolynom.polynomDegree+1]
 	}
