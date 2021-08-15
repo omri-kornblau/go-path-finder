@@ -3,7 +3,7 @@ package spline
 import (
 	"math"
 
-	"github.com/omri-kornblau/go-path-finder/utils"
+	"github.com/omri-kornblau/go-path-finder/src/utils"
 )
 
 type Point struct {

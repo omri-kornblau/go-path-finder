@@ -3,8 +3,8 @@ package costcalculator
 import (
 	"math"
 
-	"github.com/omri-kornblau/go-path-finder/spline"
-	"github.com/omri-kornblau/go-path-finder/utils"
+	"github.com/omri-kornblau/go-path-finder/src/spline"
+	"github.com/omri-kornblau/go-path-finder/src/utils"
 )
 
 const (

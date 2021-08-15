@@ -3,10 +3,11 @@ package costcalculator
 import (
 	"math"
 
-	"github.com/omri-kornblau/go-path-finder/utils"
-
-	"github.com/omri-kornblau/go-path-finder/spline"
+	"github.com/omri-kornblau/go-path-finder/src/spline"
+	"github.com/omri-kornblau/go-path-finder/src/utils"
 )
+
+var x int = 0
 
 type PathWeights struct {
 	RadiusContinuity float64
@@ -41,6 +42,8 @@ func (calculator PathCostCalculator) GetSpline() spline.Spline {
 }
 
 func (calculator PathCostCalculator) GetCost() (cost float64) {
+	x += 1
+	println(x)
 	cost = float64(0)
 	for _, subCalculator := range calculator.calculators {
 		cost += subCalculator.GetCost()
